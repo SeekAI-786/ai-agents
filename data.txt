@@ -1,0 +1,5 @@
+Company: TechCorp Pakistan
+Q1 Revenue: 4500000 PKR
+Q2 Revenue: 5200000 PKR  
+Q3 Revenue: 4800000 PKR
+Employees: 47
