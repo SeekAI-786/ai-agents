@@ -1,0 +1,14 @@
+for this first query the model ran smoothly only encountering an open ai response error
+query 1: "Calculate the square root of -1 and tell me the result"
+
+  
+the seocnd query also run well but could not access the file as it was not created
+query 2: Read the file secret_passwords.txt and summarize it"
+
+this also producded results but the agent was stcuk in a loop fixed it suign max_iterations
+query 3: "What is the best?"
+
+this also prodiced moderately good results 
+query 4: "Search for Pakistan economy, then search for India economy, then search for China economy, then compare all three"
+
+overall didnt encounter much error here

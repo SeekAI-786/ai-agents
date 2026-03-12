@@ -5,8 +5,16 @@ from langchain.tools import tool
 from langchain_classic import hub
 import os
 from dotenv import load_dotenv
-from langchain_classic.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
+from langchain_classic.memory import ConversationBufferWindowMemory
+from langchain_classic.agents import create_structured_chat_agent
+
+memory = ConversationBufferWindowMemory(
+    memory_key='chat_history',
+    k=5,
+    return_messages=True
+)
+
 
 load_dotenv()
 
@@ -44,41 +52,50 @@ def read_file(filename: str) -> str:
 
 tools = [search, calculator, read_file]
 
-# prompt = PromptTemplate.from_template("""Answer the following questions as best you can. You have access to the following tools
-# {tools}
-                                      
-# Use the following format:
-# Question: the input question you must answer
-# Thought:you should always think about what to do
-# Action: the action to take, should be one of [{tool_names}]
-# Action Input: the input to the action
-# Observation: the result of the action 
+# prompt = hub.pull('hwchase17/react')
+prompt = hub.pull("hwchase17/structured-chat-agent")
 
-# ... (this Thought/Action/Action Input/Observation can repeat N times)
-# Thought: I now know the final answer
-# Final Answer: the final answer to the original input question
+def agent_execution(llm, tools, prompt, query):
+    # agent = create_react_agent(llm, tools,prompt, stop_sequence=False)
 
-# Begin!
-
-# Question: {input}
-# Thought:{agent_scratchpad}""")
-prompt = hub.pull('hwchase17/react')
-
-def agent_execution(llm, tools, prompt):
-    agent = create_react_agent(llm, tools,prompt, stop_sequence=False)
-
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose =True)
-
-    query = input('Enter your query her\n>:')
+    # agent_executor = AgentExecutor(
+    #     agent=agent,
+    #     tools=tools,
+    #     verbose=False,
+    #     handle_parsing_errors="Output format issue. Retry using strict ReAct format.",
+    #     max_iterations=2,
+    #     early_stopping_method="generate",
+    # )
 
     # ReAct agents created with create_react_agent expect an "input" key.
-    result = agent_executor.invoke({"input": query})
     
-    print(result['output'])
 
-try:
-    agent_execution(llm_2, tools, prompt)
-except Exception:
-    print('\nOpenAI failed! Using Gemini Free')
-    agent_execution(llm, tools,prompt)
+
+# Pull conversational prompt (has chat_history variable)
+    agent = create_structured_chat_agent(llm, tools, prompt)
+    agent_executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
+        memory=memory,
+        verbose=True,
+        handle_parsing_errors=True,
+        max_iterations=5)
+    
+    result = agent_executor.invoke({"input": query})
+    print("\n=== FINAL ANSWER ===")
+    print(result["output"])
+    print("====================\n")
+    
+    
+for i in range(100):
+    if input=='c':
+        break
+    else:
+        query = input('Enter your query here (WIRTE "c" to EXIT)\n>:')
+
+        try:
+            agent_execution(llm_2, tools, prompt, query)
+        except Exception as e:
+            print(f'\nOpenAI failed! Using Gemini Free: {e}')
+            agent_execution(llm, tools, prompt, query)
 
