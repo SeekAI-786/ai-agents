@@ -14,5 +14,5 @@ A ReAct agent with 3 tools: web search, calculator, and file reader.
 - Make sure the agent doesn't get stuck in a loop adding proper validations
 
 ## How to run
-pip install -r requirements.txt
-python agent.py
+- pip install -r requirements.txt
+- python agent.py
